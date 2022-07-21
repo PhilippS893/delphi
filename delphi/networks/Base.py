@@ -4,10 +4,10 @@ import torch.nn
 import torch.nn as nn
 from abc import ABC, abstractmethod
 from typing import Callable, List, Optional
-from pannt.utils.tools import read_config
+from delphi.utils.tools import read_config
 from torch.utils.data import DataLoader
-from pannt.utils.MultiMethod import MultipleMeta
-from pannt.utils.train_fns import standard_train
+from delphi.utils.MultiMethod import MultipleMeta
+from delphi.utils.train_fns import standard_train
 import yaml
 
 

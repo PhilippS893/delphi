@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pannt.utils.tools import get_cnn_output_dim, get_maxpool_output_dim
+from delphi.utils.tools import get_cnn_output_dim, get_maxpool_output_dim
 
 
 class TestLayerDimFunctions(unittest.TestCase):
