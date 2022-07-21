@@ -1,2 +1,2 @@
-# pannt
-Philipp's artifical neural network toolbox
+# delphi
+seiDEL PHIlipp's artifical neural network toolbox
