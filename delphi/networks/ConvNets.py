@@ -1,12 +1,12 @@
-from pannt.networks.Base import TemplateModel
-from pannt.utils.train_fns import standard_train
-from pannt.utils.tools import read_config
+from delphi.networks.Base import TemplateModel
+from delphi.utils.train_fns import standard_train
+from delphi.utils.tools import read_config
 import os
 import torch
 from typing import List, Optional
 import torch.nn as nn
 import numpy as np
-from pannt.utils.layers import convbatchrelu2d, convbatchrelu3d, linrelulayer
+from delphi.utils.layers import convbatchrelu2d, convbatchrelu3d, linrelulayer
 
 
 def _get_dims_of_last_convlayer(input_dims, n_layers, cnn_kernel_size, pooling_kernel_size):
@@ -21,7 +21,7 @@ def _get_dims_of_last_convlayer(input_dims, n_layers, cnn_kernel_size, pooling_k
     Returns:
 
     """
-    from pannt.utils.tools import get_maxpool_output_dim, get_cnn_output_dim
+    from delphi.utils.tools import get_maxpool_output_dim, get_cnn_output_dim
     for i in range(n_layers - 1):
         input_dims = get_cnn_output_dim(input_dims, cnn_kernel_size[i], cnn_kernel_size[i] // 2, 1)
         input_dims = get_maxpool_output_dim(input_dims, pooling_kernel_size, 0, pooling_kernel_size, 1)

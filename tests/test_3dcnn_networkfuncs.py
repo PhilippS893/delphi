@@ -1,8 +1,8 @@
 import unittest
 import torch
 import pathlib as pl
-from pannt.networks.ConvNets import BrainStateClassifier3d
-from pannt.utils.train_fns import standard_train
+from delphi.networks.ConvNets import BrainStateClassifier3d
+from delphi.utils.train_fns import standard_train
 from time import sleep
 
 
@@ -44,7 +44,7 @@ class TestNetworkFunctions(unittest.TestCase):
         """
         import wandb
         import os
-        from pannt.utils.tools import read_config
+        from delphi.utils.tools import read_config
 
         test_params = read_config('cnn_test_params.yaml')
 

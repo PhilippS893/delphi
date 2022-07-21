@@ -1,8 +1,8 @@
 import unittest
 import torch
 import pathlib as pl
-from pannt.networks.LinearNets import SimpleLinearModel
-from pannt.utils.train_fns import standard_train
+from delphi.networks.LinearNets import SimpleLinearModel
+from delphi.utils.train_fns import standard_train
 
 
 def test_train_fn(model, data):

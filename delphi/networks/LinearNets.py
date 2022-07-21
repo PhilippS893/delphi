@@ -1,9 +1,9 @@
-from pannt.networks.Base import TemplateModel
-from pannt.utils.tools import read_config
-from pannt.utils.train_fns import standard_train
+from delphi.networks.Base import TemplateModel
+from delphi.utils.tools import read_config
+from delphi.utils.train_fns import standard_train
 from typing import List, Optional
 import torch.nn as nn
-from pannt.utils.layers import linrelulayer
+from delphi.utils.layers import linrelulayer
 import torch
 import os
 

@@ -1,8 +1,8 @@
 import unittest
 import torch
 import pathlib as pl
-from pannt.networks.ConvNets import Simple2dCnnClassifier
-from pannt.utils.train_fns import standard_train
+from delphi.networks.ConvNets import Simple2dCnnClassifier
+from delphi.utils.train_fns import standard_train
 
 
 def test_train_fn(model, data):
@@ -43,7 +43,7 @@ class TestNetworkFunctions(unittest.TestCase):
         """
         import wandb
         import os
-        from pannt.utils.tools import read_config
+        from delphi.utils.tools import read_config
 
         test_params = read_config('cnn_test_params.yaml')
 

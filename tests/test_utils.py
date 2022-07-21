@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-import pannt.utils.tools as utils
+import delphi.utils.tools as utils
 
 
 class MyTestCase(unittest.TestCase):
