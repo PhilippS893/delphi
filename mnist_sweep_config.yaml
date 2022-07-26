@@ -1,0 +1,17 @@
+name: linear-mnist-sweep
+method: random
+metric:
+    name: test_acc
+parameters:
+    lin_neurons1:
+        values: [512, 256, 128, 64, 32, 16, 8]
+    lin_neurons2:
+        values: [512, 256, 128, 64, 32, 16, 8]
+    lin_neurons3: 
+        values: [512, 256, 128, 64, 32, 16, 8]
+    learning_rate:
+        min: .0001
+        max: .1
+    epochs:
+        values: [5, 10, 20, 30]
+    

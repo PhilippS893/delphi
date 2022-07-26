@@ -88,7 +88,6 @@ def standard_train(
 
         # get the probabilities of the predictions
         prediction_probs = model.SM(outputs.data).cpu().numpy()
-
         # get the label number of the output
         _, predicted_labels = torch.max(outputs.data, 1)
 
