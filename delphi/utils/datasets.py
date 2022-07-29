@@ -159,17 +159,14 @@ class ImageDataset(Dataset):
         :param idx:
         :return:
         """
-        img = np.array(Image.open(self.data[idx]))
-
-        if len(img.shape) < 3:
-            img = np.expand_dims(img, axis=0)
+        img = Image.open(self.data[idx])
 
         label = np.squeeze(np.where(np.array(self.labels[idx]) == np.array(self.classes)))
 
         # TODO: this is not great. Needs adjustment. Concerns all other Dataset classes!
         if self.transform:
-            label = self.transform(label).to(self.device)
-            img = self.transform(label).to(self.device)
+            label = torch.tensor(label).to(self.device)
+            img = self.transform(img).to(self.device)
 
         return img, label
 
