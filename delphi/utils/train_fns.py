@@ -42,8 +42,10 @@ def standard_train(
     # set the model into training mode if it is not and train=True
     if train:
         if not model.training:
+            print("Setting in training mode.")
             model.train()
     else:
+        print("Setting in eval mode")
         model.eval()
 
     # here is something new: the optimizer
