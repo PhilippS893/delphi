@@ -1,14 +1,15 @@
 import torch.nn as nn
 
+
 def convblock3d(
         in_channels: int,
         out_channels: int,
-        kernel_size: int=3,
-        conv_rep: int=1,
-        pooling_kernel_size: int=2,
-        add_batch_norm: bool=True,
-        add_pooling: bool=True,
-        activ_fn: str="ReLU",
+        kernel_size: int = 3,
+        conv_rep: int = 1,
+        pooling_kernel_size: int = 2,
+        add_batch_norm: bool = True,
+        add_pooling: bool = True,
+        activ_fn: str = "ReLU",
 ) -> nn.Sequential:
     '''Returns a configuered 3D convolutional block.
 
@@ -48,7 +49,7 @@ def convblock3d(
                 in_channels if i == 0 else out_channels,
                 out_channels,
                 kernel_size,
-                padding=kernel_size // 2    # this keeps the dimensions of the output equal to the input
+                padding=kernel_size // 2  # this keeps the dimensions of the output equal to the input
             )
         )
 
@@ -71,6 +72,7 @@ def convblock3d(
 
     return layer_block
 
+
 def convbatchrelu2d(in_channels: int, out_channels: int, kernel_size: int, pooling_kernel: int) -> nn.Sequential:
     return nn.Sequential(
         nn.Conv2d(in_channels, out_channels, kernel_size, padding=kernel_size // 2),
@@ -83,7 +85,7 @@ def convbatchrelu3d(in_channels: int, out_channels: int, kernel_size: int, pooli
     return nn.Sequential(
         nn.Conv3d(in_channels, out_channels, kernel_size, padding=kernel_size // 2),
         nn.ReLU(inplace=False),
-        nn.BatchNorm3d(out_channels),
+        # nn.BatchNorm3d(out_channels),
         nn.MaxPool3d(pooling_kernel)
     )
 

@@ -27,7 +27,7 @@ def convert_wandb_config(cfg, required_params: list) -> dict:
     :param required_params:
     :return:
     """
-    cfg = cfg._as_dict()    # convert from wandb to dict
+    cfg = cfg._as_dict()  # convert from wandb to dict
 
     # get the keys and make sure they are in alphabetic order. If the were not this could lead to wrong initilizations
     # of layers.
@@ -38,7 +38,7 @@ def convert_wandb_config(cfg, required_params: list) -> dict:
         vals = list(cfg[k] for k, in zip(sorted_keys) if key in k.lower())
         if not vals:
             continue
-        elif len(vals) == 1:    # this is not pretty but a simple hack for now
+        elif len(vals) == 1:  # this is not pretty but a simple hack for now
             new_dict[key] = vals[0]
         else:
             new_dict[key] = vals
@@ -96,7 +96,7 @@ def occlude_images(images, attributions, mask, fraction=1, get_fdata=False) -> n
     """
     from nilearn.masking import apply_mask, unmask
 
-    fraction = fraction/100
+    fraction = fraction / 100
 
     # mask the images such that we only really consider brain voxels
     images_masked = apply_mask(images, mask)
@@ -115,7 +115,6 @@ def occlude_images(images, attributions, mask, fraction=1, get_fdata=False) -> n
         return unmask(occluded_images, mask)
     else:
         return unmask(occluded_images, mask).get_fdata()
-
 
 
 def get_cnn_output_dim(input_dims, kernel_size, padding=1, stride=1) -> np.ndarray:
@@ -187,8 +186,19 @@ def z_transform_volume(volume: np.ndarray) -> np.ndarray:
     :param volume:  e.g., single fmri volume
     :return:        z transformed volume
     """
-    mu = volume.mean()
-    std = volume.std()
+    from delphi import mni_template
+    import nibabel as nib
+
+    mask = nib.load(mni_template).get_fdata().flatten()
+    idx = mask != 0
+
+    if len(volume.shape) > 3:
+        flattened = volume.reshape(np.product(volume.shape[:-1]), volume.shape[-1])
+        mu = flattened[mask != 0, :].mean(axis=0)
+        std = flattened[mask != 0, :].std(axis=0)
+    else:
+        mu = volume[idx].mean()
+        std = volume[idx].std()
 
     return (volume - mu) / std
 
