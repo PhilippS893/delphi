@@ -94,7 +94,7 @@ class TemplateModel(nn.Module, Model):
         self.__init__(config=config)  # reinitialize the model with the config supplied by the .yaml file
         self.load_state_dict(torch.load(os.path.join(model_name, "state_dict.pth")))
 
-    def save(self, save_dir: str, save_full = False) -> None:
+    def save(self, save_dir: str, save_full=False) -> None:
         r"""
         saves the statedict and the configuration of the network.
         The resulting .pth and .yaml file can be loaded for later use.

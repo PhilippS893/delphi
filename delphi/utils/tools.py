@@ -43,6 +43,7 @@ def convert_wandb_config(cfg, required_params: list) -> dict:
         else:
             new_dict[key] = vals
 
+    new_dict.update(cfg)
     return new_dict
 
 

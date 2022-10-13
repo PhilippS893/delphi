@@ -6,7 +6,7 @@ import torch
 from typing import List, Optional
 import torch.nn as nn
 import numpy as np
-from delphi.utils.layers import convbatchrelu2d, convbatchrelu3d, linrelulayer
+from delphi.utils.layers import convbatchrelu2d, convbatchrelu3d, linrelulayer, convblock3d
 
 
 def _get_dims_of_last_convlayer(input_dims, n_layers, cnn_kernel_size, pooling_kernel_size):
@@ -27,6 +27,48 @@ def _get_dims_of_last_convlayer(input_dims, n_layers, cnn_kernel_size, pooling_k
         input_dims = get_maxpool_output_dim(input_dims, pooling_kernel_size, 0, pooling_kernel_size, 1)
 
     return input_dims
+
+class FCN3d(TemplateModel):
+
+    def _use_default_config(self) -> dict:
+        return {
+            'channels': [1, 8, 16, 32, 64],
+            'kernel_size': 5,
+            'pooling_kernel': 2,
+            'lin_neurons': [128, 64],
+            'dropout': .5,
+        }
+
+    def __init__(
+            self,
+            input_dims: tuple,
+            n_classes: int,
+            config: dict=None,
+    ):
+        super().__init__()
+        self.config = self._use_default_config() if config is None else self._update_params_in_config(config)
+        self.model = self._setup_layers()
+
+
+    def _setup_layers(self):
+        # we accumulate layers in layer_stack by layer_stack.extend([<layers>])
+        layer_stack = []
+
+        layer_stack.extend(
+            convblock3d(1, 8, conv_rep=2)
+        )
+
+        layer_stack.extend(
+            convblock3d(8, 16)
+        )
+
+        return torch.nn.Sequential(*layer_stack)
+
+    def forward(
+            self,
+            input: torch.Tensor
+    ) -> torch.Tensor:
+        return self.model(input)
 
 
 class BrainStateClassifier3d(TemplateModel):
@@ -84,7 +126,7 @@ class BrainStateClassifier3d(TemplateModel):
             train_fn: type(standard_train) = standard_train,
     ):
         r"""
-        Constructor to build a simple 2d Convolutional Neural Network classifier.
+        Constructor to build a simple 3d Convolutional Neural Network classifier.
 
         Args:
             input_dims:
