@@ -80,6 +80,43 @@ def compute_accuracy(real: np.ndarray, predicted: np.ndarray):
     return accuracy
 
 
+def occlude_images(images, attributions, mask, fraction=1, get_fdata=False) -> nib.Nifti1Image:
+    """
+
+    Args:
+        images:
+        attributions:
+        mask:
+        fraction:   voxel percentage to occlude (default=1%)
+        get_fdata:  in case one wants to get the numpy arrays already.
+
+    Returns:
+
+    """
+    from nilearn.masking import apply_mask, unmask
+
+    fraction = fraction/100
+
+    # mask the images such that we only really consider brain voxels
+    images_masked = apply_mask(images, mask)
+    attributions_masked = apply_mask(attributions, mask)
+
+    # find the indices of the largest n voxels for each attribution image (number depends on fraction)
+    occlusion_indices = np.argsort(a=attributions_masked, axis=1)[:, ::-1]  # this means we find the largest.
+    occlusion_indices = occlusion_indices[:, :int(fraction * occlusion_indices.shape[1])]
+
+    # dummy for occluded images
+    occluded_images = np.array(images_masked)
+    occluded_images[:, occlusion_indices] = 0
+
+    # convert the occluded_images back into 3d nibabel format
+    if not get_fdata:
+        return unmask(occluded_images, mask)
+    else:
+        return unmask(occluded_images, mask).get_fdata()
+
+
+
 def get_cnn_output_dim(input_dims, kernel_size, padding=1, stride=1) -> np.ndarray:
     """
     computes the output dimensions after a convolution layer operation.
@@ -180,10 +217,11 @@ def save_in_mni(data: np.ndarray, output_name: str):
     :param output_name: path and name of the file
     :param data: 3d volumetric data
     """
+    from delphi import mni_template
     # we want to save the LRP map in MNI space. To do so in an easy (maybe sloppy)
     # way I load the MNI brain mask as a template file and use its header to save
     # the LRP maps.
-    template = nib.load('MNI152_T1_2mm_brain_mask.nii.gz')
+    template = nib.load(mni_template)
 
     # save the LRP maps (with the template header) for a given class
     out_data = nib.Nifti1Image(data, template.affine, header=template.header)

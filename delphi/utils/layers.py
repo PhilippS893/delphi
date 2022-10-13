@@ -13,6 +13,7 @@ def convbatchrelu3d(in_channels: int, out_channels: int, kernel_size: int, pooli
     return nn.Sequential(
         nn.Conv3d(in_channels, out_channels, kernel_size, padding=kernel_size // 2),
         nn.ReLU(inplace=False),
+        nn.BatchNorm3d(out_channels),
         nn.MaxPool3d(pooling_kernel)
     )
 
