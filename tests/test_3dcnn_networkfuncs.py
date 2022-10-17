@@ -1,7 +1,7 @@
 import unittest
 import torch
 import pathlib as pl
-from delphi.networks.ConvNets import BrainStateClassifier3d
+from delphi.networks.ConvNets import BrainStateClassifier3d,FCN3d
 from delphi.utils.train_fns import standard_train
 from time import sleep
 
@@ -69,6 +69,12 @@ class TestNetworkFunctions(unittest.TestCase):
         model = BrainStateClassifier3d((91, 109, 91), 10, config._as_dict(), test_train_fn)
         wandb.finish()
         self.assertDictEqual(target_config, model.config)
+
+    def test_FCN3d_createion(self):
+
+        model = FCN3d((91,109,91), 5)
+        debug = 0
+
 
     def test_custom_config(self):
         r"""

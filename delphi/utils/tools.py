@@ -100,7 +100,7 @@ def get_cnn_output_dim(input_dims, kernel_size, padding=1, stride=1) -> np.ndarr
 
     # get number of input dimension
     if type(input_dims) is not np.ndarray:
-        input_dims = np.array(input_dims)
+        input_dims = np.array(input_dims).squeeze()
 
     n_dims = input_dims.shape
 
@@ -146,12 +146,22 @@ def get_maxpool_output_dim(input_dims, kernel_size, padding, stride, dilation) -
 def z_transform_volume(volume: np.ndarray) -> np.ndarray:
     """
     z transforms the values within a volume.
-
     :param volume:  e.g., single fmri volume
     :return:        z transformed volume
     """
-    mu = volume.mean()
-    std = volume.std()
+    from delphi import mni_template
+    import nibabel as nib
+
+    mask = nib.load(mni_template).get_fdata().flatten()
+    idx = mask != 0
+
+    if len(volume.shape) > 3:
+        flattened = volume.reshape(np.product(volume.shape[:-1]), volume.shape[-1])
+        mu = flattened[mask != 0, :].mean(axis=0)
+        std = flattened[mask != 0, :].std(axis=0)
+    else:
+        mu = volume[idx].mean()
+        std = volume[idx].std()
 
     return (volume - mu) / std
 
@@ -177,20 +187,19 @@ def z_transform(data: np.ndarray) -> np.ndarray:
 def save_in_mni(data: np.ndarray, output_name: str):
     """
     Save a 3-D volume in mni space.
-
     :param output_name: path and name of the file
     :param data: 3d volumetric data
     """
+    from delphi import mni_template
     # we want to save the LRP map in MNI space. To do so in an easy (maybe sloppy)
     # way I load the MNI brain mask as a template file and use its header to save
     # the LRP maps.
-    template = nib.load('MNI152_T1_2mm_brain_mask.nii.gz')
+    template = nib.load(mni_template)
 
     # save the LRP maps (with the template header) for a given class
     out_data = nib.Nifti1Image(data, template.affine, header=template.header)
     print('Saving %s' % output_name)
     nib.save(out_data, output_name)
-
 
 def classify_volumes(data, net):
     """

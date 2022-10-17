@@ -1,6 +1,6 @@
 from delphi.networks.Base import TemplateModel
 from delphi.utils.train_fns import standard_train
-from delphi.utils.tools import read_config
+from delphi.utils.tools import read_config, get_cnn_output_dim, get_maxpool_output_dim
 import os
 import torch
 from typing import List, Optional
@@ -31,13 +31,29 @@ def _get_dims_of_last_convlayer(input_dims, n_layers, cnn_kernel_size, pooling_k
 class FCN3d(TemplateModel):
 
     def _use_default_config(self) -> dict:
-        return {
-            'channels': [1, 8, 16, 32, 64],
+        default_cfg = {
+            'n_hidden_layers': 4,
+            'input_channels': 1,
+            'channels': [8, 16, 32, 64],
             'kernel_size': 5,
             'pooling_kernel': 2,
-            'lin_neurons': [128, 64],
             'dropout': .5,
         }
+
+        n_layers = default_cfg["n_hidden_layers"]
+
+        default_cfg["add_pooling"] = [True] * n_layers
+        default_cfg["add_batchnorm"] = [True] * n_layers
+        default_cfg["add_dropout"] = [True] * n_layers
+
+        # for more flexibility in coding, check if the following variables are scalars
+        # if so, multiply them by n_layers
+        potential_scalars = ["kernel_size", "pooling_kernel", "dropout"]
+        for i, var in enumerate(potential_scalars):
+            if isinstance(default_cfg[var], int) or isinstance(default_cfg[var], float):
+                default_cfg[var] = [default_cfg[var]] * n_layers
+
+        return default_cfg
 
     def __init__(
             self,
@@ -47,6 +63,9 @@ class FCN3d(TemplateModel):
     ):
         super().__init__()
         self.config = self._use_default_config() if config is None else self._update_params_in_config(config)
+        self.config["input_dims"] = input_dims
+        self.config["n_classes"] = n_classes
+        self.SM = torch.nn.Softmax(dim=1)
         self.model = self._setup_layers()
 
 
@@ -54,13 +73,48 @@ class FCN3d(TemplateModel):
         # we accumulate layers in layer_stack by layer_stack.extend([<layers>])
         layer_stack = []
 
-        layer_stack.extend(
-            convblock3d(1, 8, conv_rep=2)
-        )
+        out_shape = self.config["input_dims"]
+        for i in range(self.config["n_hidden_layers"]):
+            convblock3d(
+                layer_stack,
+                in_channels     =   self.config["input_channels"] if i==0 else self.config["channels"][i-1],
+                out_channels    =   self.config["channels"][0] if i==0 else self.config["channels"][i],
+                kernel_size     =   self.config["kernel_size"][i],
+                conv_rep        =   1 if "conv_rep" not in self.config else self.config["conv_rep"][i],
+                pooling_kernel_size=2 if "pooling_kernel" not in self.config else self.config["pooling_kernel"][i],
+                activ_fn="ReLU",
+                add_pooling=True if "add_pooling" not in self.config else self.config["add_pooling"][i],
+                add_batch_norm=True if "add_batchnorm" not in self.config else self.config["add_batchnorm"][i],
+                conv_kwargs={} if "conv_kwargs" not in self.config else self.config["conv_kwargs"]
+            ),
 
-        layer_stack.extend(
-            convblock3d(8, 16)
-        )
+            if "add_dropout" in self.config:
+                if self.config["add_dropout"][i]:
+                    layer_stack.extend([
+                        nn.Dropout(p=self.config["dropout"][i])
+                    ])
+
+            # compute the layers output shape
+            out_shape = get_cnn_output_dim(
+                input_dims=out_shape,
+                kernel_size=self.config["kernel_size"][i],
+                **self.config["conv_kwargs"]
+            )
+
+            use_pooling = True if "add_pooling" not in self.config else self.config["add_pooling"][i]
+            # compute the pooling layers output shape
+            if use_pooling:
+                out_shape = get_maxpool_output_dim(out_shape, self.config["pooling_kernel"][i], 0,
+                                                   self.config["pooling_kernel"][i], 1)
+
+        # add the output linear layer
+        layer_stack.extend([
+                nn.Flatten(),
+                nn.Linear(
+                    in_features= np.product(out_shape) * self.config["channels"][self.config["n_hidden_layers"]-1],
+                    out_features=self.config["n_classes"]
+                )
+        ])
 
         return torch.nn.Sequential(*layer_stack)
 

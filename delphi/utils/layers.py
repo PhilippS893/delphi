@@ -1,6 +1,7 @@
 import torch.nn as nn
 
 def convblock3d(
+        layer_block,
         in_channels: int,
         out_channels: int,
         kernel_size: int=3,
@@ -9,6 +10,7 @@ def convblock3d(
         add_batch_norm: bool=True,
         add_pooling: bool=True,
         activ_fn: str="ReLU",
+        conv_kwargs: dict={}
 ) -> nn.Sequential:
     '''Returns a configuered 3D convolutional block.
 
@@ -39,35 +41,37 @@ def convblock3d(
         The block of sequential layers.
 
     '''
-    layer_block = nn.Sequential()
+    if not conv_kwargs or "padding" not in conv_kwargs.keys():
+        conv_kwargs["padding"] = kernel_size // 2
+
 
     # add the conv3d layer
     for i in range(conv_rep):
-        layer_block.append(
+        layer_block.extend([
             nn.Conv3d(
                 in_channels if i == 0 else out_channels,
                 out_channels,
                 kernel_size,
-                padding=kernel_size // 2    # this keeps the dimensions of the output equal to the input
+                **conv_kwargs
             )
-        )
+        ])
 
     # add the batchnorm layer after the convlayer(s)
     if add_batch_norm:
-        layer_block.append(
+        layer_block.extend([
             nn.BatchNorm3d(out_channels)
-        )
+        ])
 
     # add the activation function
-    layer_block.append(
+    layer_block.extend([
         nn.ReLU(inplace=False)  # we need this to be False to do LRP. Inplace=True led to issues
-    )
+    ])
 
     # add the pooling layer if wanted
     if add_pooling:
-        layer_block.append(
+        layer_block.extend([
             nn.MaxPool3d(kernel_size=pooling_kernel_size)
-        )
+        ])
 
     return layer_block
 
