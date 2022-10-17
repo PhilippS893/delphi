@@ -28,6 +28,7 @@ def _get_dims_of_last_convlayer(input_dims, n_layers, cnn_kernel_size, pooling_k
 
     return input_dims
 
+
 class FCN3d(TemplateModel):
 
     def _use_default_config(self) -> dict:
@@ -59,7 +60,7 @@ class FCN3d(TemplateModel):
             self,
             input_dims: tuple,
             n_classes: int,
-            config: dict=None,
+            config: dict = None,
     ):
         super().__init__()
         self.config = self._use_default_config() if config is None else self._update_params_in_config(config)
@@ -67,7 +68,6 @@ class FCN3d(TemplateModel):
         self.config["n_classes"] = n_classes
         self.SM = torch.nn.Softmax(dim=1)
         self.model = self._setup_layers()
-
 
     def _setup_layers(self):
         # we accumulate layers in layer_stack by layer_stack.extend([<layers>])
@@ -77,10 +77,10 @@ class FCN3d(TemplateModel):
         for i in range(self.config["n_hidden_layers"]):
             convblock3d(
                 layer_stack,
-                in_channels     =   self.config["input_channels"] if i==0 else self.config["channels"][i-1],
-                out_channels    =   self.config["channels"][0] if i==0 else self.config["channels"][i],
-                kernel_size     =   self.config["kernel_size"][i],
-                conv_rep        =   1 if "conv_rep" not in self.config else self.config["conv_rep"][i],
+                in_channels=self.config["input_channels"] if i == 0 else self.config["channels"][i - 1],
+                out_channels=self.config["channels"][0] if i == 0 else self.config["channels"][i],
+                kernel_size=self.config["kernel_size"][i],
+                conv_rep=1 if "conv_rep" not in self.config else self.config["conv_rep"][i],
                 pooling_kernel_size=2 if "pooling_kernel" not in self.config else self.config["pooling_kernel"][i],
                 activ_fn="ReLU",
                 add_pooling=True if "add_pooling" not in self.config else self.config["add_pooling"][i],
@@ -109,11 +109,11 @@ class FCN3d(TemplateModel):
 
         # add the output linear layer
         layer_stack.extend([
-                nn.Flatten(),
-                nn.Linear(
-                    in_features= np.product(out_shape) * self.config["channels"][self.config["n_hidden_layers"]-1],
-                    out_features=self.config["n_classes"]
-                )
+            nn.Flatten(),
+            nn.Linear(
+                in_features=np.product(out_shape) * self.config["channels"][self.config["n_hidden_layers"] - 1],
+                out_features=self.config["n_classes"]
+            )
         ])
 
         return torch.nn.Sequential(*layer_stack)
@@ -150,9 +150,10 @@ class BrainStateClassifier3d(TemplateModel):
         super(BrainStateClassifier3d, self).__init__()
         print('Loading from config file %s/config.yaml' % path_to_config_file)
         self.config = read_config(os.path.join(path_to_config_file, "config.yaml"))
-        self.train_fn = self.config['train_fn']     # override the default
+        self.train_fn = self.config['train_fn']  # override the default
         self._setup_layers()
-        self.load_state_dict(torch.load(os.path.join(path_to_config_file, "state_dict.pth"), map_location=torch.device("cpu")))
+        self.load_state_dict(
+            torch.load(os.path.join(path_to_config_file, "state_dict.pth"), map_location=torch.device("cpu")))
 
     def __init__(
             self,
@@ -197,7 +198,8 @@ class BrainStateClassifier3d(TemplateModel):
         self._check_params_in_config()
 
         if isinstance(self.config["kernel_size"], int):
-            self.config["kernel_size"] = [self.config["kernel_size"] for i in range(0, len(self.config["channels"]) - 1)]
+            self.config["kernel_size"] = [self.config["kernel_size"] for i in
+                                          range(0, len(self.config["channels"]) - 1)]
 
         self.config['input_dims'] = input_dims
         self.config['n_classes'] = n_classes
@@ -221,7 +223,7 @@ class BrainStateClassifier3d(TemplateModel):
         x = self.dropout(x)
         # pass the flattened input through n-1 linlayers followed by a dropout
         for i, linlayer in enumerate(self.lin):
-            if i < len(self.lin)-1:
+            if i < len(self.lin) - 1:
                 x = linlayer(x)
                 x = self.dropout(x)
 
@@ -304,7 +306,7 @@ class Simple2dCnnClassifier(TemplateModel):
         super(Simple2dCnnClassifier, self).__init__()
         print('Loading from config file %s/config.yaml' % path_to_config_file)
         self.config = read_config(os.path.join(path_to_config_file, "config.yaml"))
-        self.train_fn = self.config['train_fn']     # override the default
+        self.train_fn = self.config['train_fn']  # override the default
         self._setup_layers()
         self.load_state_dict(torch.load(os.path.join(path_to_config_file, "state_dict.pth")))
 
@@ -351,7 +353,8 @@ class Simple2dCnnClassifier(TemplateModel):
         self._check_params_in_config()
 
         if isinstance(self.config["kernel_size"], int):
-            self.config["kernel_size"] = [self.config["kernel_size"] for i in range(0, len(self.config["channels"]) - 1)]
+            self.config["kernel_size"] = [self.config["kernel_size"] for i in
+                                          range(0, len(self.config["channels"]) - 1)]
 
         self.config['input_dims'] = input_dims
         self.config['n_classes'] = n_classes
