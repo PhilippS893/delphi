@@ -44,7 +44,7 @@ class TestNetworkFunctions(unittest.TestCase):
         """
         import wandb
         import os
-        from delphi.utils.tools import read_config
+        from delphi.utils.tools import read_config, convert_wandb_config
 
         test_params = read_config('cnn_test_params.yaml')
 
@@ -65,8 +65,8 @@ class TestNetworkFunctions(unittest.TestCase):
         os.environ['WANDB_MODE'] = 'offline'
         wandb.init(config=test_params, entity='ml4ni', project='code-testing',
                    dir='')
-        config = wandb.config
-        model = BrainStateClassifier3d((91, 109, 91), 10, config._as_dict(), test_train_fn)
+        config = convert_wandb_config(wandb.config, BrainStateClassifier3d._REQUIRED_PARAMS)
+        model = BrainStateClassifier3d((91, 109, 91), 10, config, test_train_fn)
         wandb.finish()
         self.assertDictEqual(target_config, model.config)
 
@@ -182,6 +182,19 @@ class TestNetworkFunctions(unittest.TestCase):
         target_config['train_fn'] = test_train_fn
         model = torch.load(self.cnn_test_model_with_custom_train)
         self.assertDictEqual(target_config, model.config)
+
+    def test_with_different_channel_variables(self):
+
+        cfg = {
+            "channels1": 1,
+            "channels2": 8,
+            "channels3": 128,
+            "kernel_size": 3,
+            "lin_neurons1": 64,
+            "lin_neurons2": 128,
+        }
+
+        model = BrainStateClassifier3d((91, 109, 91), 5, cfg)
 
     @classmethod
     def tearDownClass(cls) -> None:

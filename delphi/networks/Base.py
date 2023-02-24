@@ -140,8 +140,22 @@ class TemplateModel(nn.Module, Model):
         :param new_config:
         :return:
         """
+        # get the keys and make sure they are in alphabetic order. If the were not this could lead to wrong initilizations
+        # of layers.
+        sorted_keys = sorted(new_config.keys())
+
+        new_dict = dict()
+        for _, key in enumerate(self._REQUIRED_PARAMS):
+            vals = list(new_config[k] for k, in zip(sorted_keys) if key in k.lower())
+            if not vals:
+                continue
+            elif len(vals) == 1:  # this is not pretty but a simple hack for now
+                new_dict[key] = vals[0]
+            else:
+                new_dict[key] = vals
+
         default_config = self._use_default_config()
-        default_config.update(new_config)
+        default_config.update(new_dict)
         return default_config
 
     def _check_params_in_config(self) -> None:

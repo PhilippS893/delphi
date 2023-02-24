@@ -12,6 +12,7 @@ architectures.
 Below are two examples of how to generate a CNN:
 ```python
 from delphi.networks.ConvNets import BrainStateClassifier3d
+from torchinfo import summary
 
 model_cfg = {
     "channels": [1, 8, 16, 32, 64],
@@ -21,13 +22,63 @@ model_cfg = {
 }
 
 input_dims = (91, 109, 91)
-classes = 5
+n_classes = 5
 
 # creates a 3D CNN with 4 convolutional layers with 3x3x3 kernel size and
 # 8, 16, 32, and 64 filters, respectively.
 # It also adds two linear layers with 128 and 64 neurons and hooks it up
 # to 5 output neurons.
-model = BrainStateClassifier3d(input_dims, n_classes, config=model_cfg)
+model = BrainStateClassifier3d(input_dims, n_classes, model_cfg)
+print(summary(model, (1, 1, 91, 109, 91)))
+#OUTPUT
+"""
+==========================================================================================
+Layer (type:depth-idx)                   Output Shape              Param #
+==========================================================================================
+BrainStateClassifier3d                   [1, 5]                    --
+├─Dropout: 1-6                           [1, 128]                  --
+├─ReLU: 1-2                              --                        --
+├─Softmax: 1-3                           --                        --
+├─Sequential: 1-4                        --                        --
+│    └─Sequential: 2-1                   [1, 8, 45, 54, 45]        --
+│    │    └─Conv3d: 3-1                  [1, 8, 91, 109, 91]       224
+│    │    └─ReLU: 3-2                    [1, 8, 91, 109, 91]       --
+│    │    └─MaxPool3d: 3-3               [1, 8, 45, 54, 45]        --
+│    └─Sequential: 2-2                   [1, 16, 22, 27, 22]       --
+│    │    └─Conv3d: 3-4                  [1, 16, 45, 54, 45]       3,472
+│    │    └─ReLU: 3-5                    [1, 16, 45, 54, 45]       --
+│    │    └─MaxPool3d: 3-6               [1, 16, 22, 27, 22]       --
+│    └─Sequential: 2-3                   [1, 32, 11, 13, 11]       --
+│    │    └─Conv3d: 3-7                  [1, 32, 22, 27, 22]       13,856
+│    │    └─ReLU: 3-8                    [1, 32, 22, 27, 22]       --
+│    │    └─MaxPool3d: 3-9               [1, 32, 11, 13, 11]       --
+│    └─Sequential: 2-4                   [1, 64, 5, 6, 5]          --
+│    │    └─Conv3d: 3-10                 [1, 64, 11, 13, 11]       55,360
+│    │    └─ReLU: 3-11                   [1, 64, 11, 13, 11]       --
+│    │    └─MaxPool3d: 3-12              [1, 64, 5, 6, 5]          --
+├─Dropout: 1-5                           [1, 9600]                 --
+├─Sequential: 1                          --                        --
+│    └─Sequential: 2-5                   [1, 128]                  --
+│    │    └─Linear: 3-13                 [1, 128]                  1,228,928
+│    │    └─ReLU: 3-14                   [1, 128]                  --
+├─Dropout: 1-6                           [1, 128]                  --
+├─Sequential: 1                          --                        --
+│    └─Sequential: 2-6                   [1, 64]                   --
+│    │    └─Linear: 3-15                 [1, 64]                   8,256
+│    │    └─ReLU: 3-16                   [1, 64]                   --
+├─Linear: 1-7                            [1, 5]                    325
+==========================================================================================
+Total params: 1,310,421
+Trainable params: 1,310,421
+Non-trainable params: 0
+Total mult-adds (M): 851.24
+==========================================================================================
+Input size (MB): 3.61
+Forward/backward pass size (MB): 75.92
+Params size (MB): 5.24
+Estimated Total Size (MB): 84.77
+==========================================================================================
+"""
 ```
 
 <p align="justify">A second example shows how the <code>channel</code> variable can be split up into different key-value pairs to further 
@@ -35,6 +86,7 @@ configure the network.</p>
 
 ```python
 from delphi.networks.ConvNets import BrainStateClassifier3d
+from torchinfo import summary
 
 model_cfg = {
     "channels1": 1, #the first channel always pertains the input channels. Could also be >1
@@ -48,9 +100,55 @@ model_cfg = {
 }
 
 input_dims = (91, 109, 91)
-classes = 5
+n_classes = 5
 
-model = BrainStateClassifier3d(input_dims, n_classes, config=model_cfg)
+model = BrainStateClassifier3d(input_dims, n_classes, model_cfg)
+print(summary(model, (1, 1, 91, 109, 91)))
+#OUTPUT:
+"""
+==========================================================================================
+Layer (type:depth-idx)                   Output Shape              Param #
+==========================================================================================
+BrainStateClassifier3d                   [1, 5]                    --
+├─Dropout: 1-6                           [1, 64]                   --
+├─ReLU: 1-2                              --                        --
+├─Softmax: 1-3                           --                        --
+├─Sequential: 1-4                        --                        --
+│    └─Sequential: 2-1                   [1, 16, 45, 54, 45]       --
+│    │    └─Conv3d: 3-1                  [1, 16, 91, 109, 91]      448
+│    │    └─ReLU: 3-2                    [1, 16, 91, 109, 91]      --
+│    │    └─MaxPool3d: 3-3               [1, 16, 45, 54, 45]       --
+│    └─Sequential: 2-2                   [1, 8, 22, 27, 22]        --
+│    │    └─Conv3d: 3-4                  [1, 8, 45, 54, 45]        3,464
+│    │    └─ReLU: 3-5                    [1, 8, 45, 54, 45]        --
+│    │    └─MaxPool3d: 3-6               [1, 8, 22, 27, 22]        --
+│    └─Sequential: 2-3                   [1, 32, 11, 13, 11]       --
+│    │    └─Conv3d: 3-7                  [1, 32, 22, 27, 22]       6,944
+│    │    └─ReLU: 3-8                    [1, 32, 22, 27, 22]       --
+│    │    └─MaxPool3d: 3-9               [1, 32, 11, 13, 11]       --
+├─Dropout: 1-5                           [1, 50336]                --
+├─Sequential: 1                          --                        --
+│    └─Sequential: 2-4                   [1, 64]                   --
+│    │    └─Linear: 3-10                 [1, 64]                   3,221,568
+│    │    └─ReLU: 3-11                   [1, 64]                   --
+├─Dropout: 1-6                           [1, 64]                   --
+├─Sequential: 1                          --                        --
+│    └─Sequential: 2-5                   [1, 128]                  --
+│    │    └─Linear: 3-12                 [1, 128]                  8,320
+│    │    └─ReLU: 3-13                   [1, 128]                  --
+├─Linear: 1-7                            [1, 5]                    645
+==========================================================================================
+Total params: 3,241,389
+Trainable params: 3,241,389
+Non-trainable params: 0
+Total mult-adds (M): 877.14
+==========================================================================================
+Input size (MB): 3.61
+Forward/backward pass size (MB): 125.88
+Params size (MB): 12.97
+Estimated Total Size (MB): 142.46
+==========================================================================================
+"""
 ```
 
 <p align="justify">
@@ -75,7 +173,7 @@ def my_train(model, dataloader): # these two variables are mandatory if you want
 
 my_loader = DataLoader(DataSet())
     
-model = BrainStateClassifier3d(input_dims, n_classes, config=model_cfg, train_fn=my_train)
+model = BrainStateClassifier3d(input_dims, n_classes, model_cfg, my_train)
 model.fit(my_loader)
 ```
 <p align="justify">
