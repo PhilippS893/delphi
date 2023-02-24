@@ -59,7 +59,8 @@ def classification_timecourse(classification_vals, path_to_ev_files, fig_save_na
     # plt.close(fig)
 
 
-def confusion_matrix(real, predicted, classes, fig_save_name=None, normalize=False, doplot=True, ax=None):
+def confusion_matrix(real, predicted, classes, ax=None,
+                     fig_save_name=None, normalize=False, doplot=True, **kwargs):
     """
     function to plot a confusion matrix
 
@@ -70,6 +71,7 @@ def confusion_matrix(real, predicted, classes, fig_save_name=None, normalize=Fal
     :param normalize:       bool normalize to values between 0-1 [True | (default)False]
     :param doplot:          bool to show the plot [(default)True | False]
     :return:
+
     """
     from sklearn.metrics import confusion_matrix
 
@@ -80,29 +82,36 @@ def confusion_matrix(real, predicted, classes, fig_save_name=None, normalize=Fal
     if normalize:
         mat = np.round(mat / mat.sum(axis=1), 2)
 
-    ax = ax or plt.gca()
-    plt.rc('font', size=12)  # controls default text sizes
-    plt.rc('axes', titlesize=16)  # fontsize of the axes title
-    plt.rc('axes', labelsize=12)  # fontsize of the x and y labels
-    plt.rc('xtick', labelsize=10)  # fontsize of the tick labels
-    plt.rc('ytick', labelsize=10)  # fontsize of the tick labels
-    plt.rc('legend', fontsize=12)  # legend fontsize
-    
-    ax.imshow(mat, cmap='seismic')
-    for (j, i), label in np.ndenumerate(mat):
-        ax.text(i, j, label, ha='center', va='center', color='w')
-
-    #ax.set_title('Confusion matrix on test data')
-    ax.set_xticks(np.arange(0, n_classes, 1))
-    ax.set_xticklabels(classes, rotation=45)
-    ax.set_yticks(np.arange(0, n_classes, 1))
-    ax.set_yticklabels(classes)
-    ax.set_xlabel('predicted')
-    ax.set_ylabel('real')
-
     if doplot:
-        plt.show()
+        ax = plt.gca() if ax is None else ax
+        plt.rc('font', size=12)  # controls default text sizes
+        plt.rc('axes', titlesize=16)  # fontsize of the axes title
+        plt.rc('axes', labelsize=12)  # fontsize of the x and y labels
+        plt.rc('xtick', labelsize=10)  # fontsize of the tick labels
+        plt.rc('ytick', labelsize=10)  # fontsize of the tick labels
+        plt.rc('legend', fontsize=12)  # legend fontsize
+
+        im = ax.imshow(mat, cmap='Spectral' if "cmap" not in kwargs else kwargs["cmap"],
+                       vmin=None if "vmin" not in kwargs else kwargs["vmin"],
+                       vmax=None if "vmax" not in kwargs else kwargs["vmax"])
+
+        mat_max = np.max(mat.sum(axis=1)) # the sum across a column should be the maximum possible value
+
+        for (j, i), label in np.ndenumerate(mat):
+            if mat_max*.25 < label < mat_max*.75:
+                c = 'black'
+            else:
+                c = 'w'
+            ax.text(i, j, label, ha='center', va='center', color=c)
+
+        ax.set_xticks(np.arange(0, n_classes, 1))
+        ax.set_xticklabels(classes, rotation=45)
+        ax.set_yticks(np.arange(0, n_classes, 1))
+        ax.set_yticklabels(classes)
+        ax.set_xlabel('predicted')
+        ax.set_ylabel('real')
+        #plt.show()
     if fig_save_name is not None:
         plt.savefig(fig_save_name, facecolor=fig.get_facecolor(), transparent=True)
 
-    return mat
+    return mat, im

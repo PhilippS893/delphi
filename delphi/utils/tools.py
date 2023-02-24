@@ -112,9 +112,9 @@ def occlude_images(images, attributions, mask, fraction=1, get_fdata=False) -> n
 
     # convert the occluded_images back into 3d nibabel format
     if not get_fdata:
-        return unmask(occluded_images, mask)
+        return unmask(occluded_images, mask), occlusion_indices.shape[1]
     else:
-        return unmask(occluded_images, mask).get_fdata()
+        return unmask(occluded_images, mask).get_fdata(), occlusion_indices.shape[1]
 
 
 def get_cnn_output_dim(input_dims, kernel_size, padding=1, stride=1) -> np.ndarray:
