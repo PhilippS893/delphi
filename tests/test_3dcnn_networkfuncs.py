@@ -185,6 +185,9 @@ class TestNetworkFunctions(unittest.TestCase):
 
     def test_with_different_channel_variables(self):
 
+        from delphi.utils.tools import convert_wandb_config
+        import os, wandb
+
         cfg = {
             "channels1": 1,
             "channels2": 8,
@@ -194,7 +197,10 @@ class TestNetworkFunctions(unittest.TestCase):
             "lin_neurons2": 128,
         }
 
-        model = BrainStateClassifier3d((91, 109, 91), 5, cfg)
+        os.environ['WANDB_MODE'] = 'offline'
+        with wandb.init(config=cfg) as run:
+            cfg = convert_wandb_config(run.config, BrainStateClassifier3d._REQUIRED_PARAMS)
+            model = BrainStateClassifier3d((91, 109, 91), 5, cfg)
 
     @classmethod
     def tearDownClass(cls) -> None:
