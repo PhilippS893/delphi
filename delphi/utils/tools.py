@@ -136,7 +136,7 @@ def get_cnn_output_dim(input_dims, kernel_size, padding=1, stride=1) -> np.ndarr
 
     # get number of input dimension
     if type(input_dims) is not np.ndarray:
-        input_dims = np.array(input_dims)
+        input_dims = np.array(input_dims).squeeze()
 
     n_dims = input_dims.shape
 
@@ -194,8 +194,8 @@ def z_transform_volume(volume: np.ndarray) -> np.ndarray:
 
     if len(volume.shape) > 3:
         flattened = volume.reshape(np.product(volume.shape[:-1]), volume.shape[-1])
-        mu = flattened[mask != 0, :].mean(axis=0)
-        std = flattened[mask != 0, :].std(axis=0)
+        mu = flattened[idx, :].mean(axis=0)
+        std = flattened[idx, :].std(axis=0)
     else:
         mu = volume[idx].mean()
         std = volume[idx].std()

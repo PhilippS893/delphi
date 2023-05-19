@@ -79,7 +79,6 @@ class BrainStateClassifier3d(TemplateModel):
             'channels': [1, 8, 16, 32, 64],
             'kernel_size': 5,
             'pooling_kernel': 2,
-            'lin_neurons': [128, 64],
             'dropout': .5,
         }
 
