@@ -146,6 +146,9 @@ class TemplateModel(nn.Module, Model):
 
         new_dict = dict()
         for _, key in enumerate(self._REQUIRED_PARAMS):
+            if key in new_config.keys():
+                new_dict[key] = new_config[key]
+                continue
             vals = list(new_config[k] for k, in zip(sorted_keys) if key in k.lower())
             if not vals:
                 continue
