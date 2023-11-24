@@ -28,6 +28,7 @@ def _get_dims_of_last_convlayer(input_dims, n_layers, cnn_kernel_size, pooling_k
 
     return input_dims
 
+
 class FCN3d(TemplateModel):
 
     def _use_default_config(self) -> dict:
@@ -35,7 +36,6 @@ class FCN3d(TemplateModel):
             'channels': [1, 8, 16, 32, 64],
             'kernel_size': 5,
             'pooling_kernel': 2,
-            'lin_neurons': [128, 64],
             'dropout': .5,
         }
 
@@ -43,12 +43,11 @@ class FCN3d(TemplateModel):
             self,
             input_dims: tuple,
             n_classes: int,
-            config: dict=None,
+            config: dict = None,
     ):
         super().__init__()
         self.config = self._use_default_config() if config is None else self._update_params_in_config(config)
         self.model = self._setup_layers()
-
 
     def _setup_layers(self):
         # we accumulate layers in layer_stack by layer_stack.extend([<layers>])
@@ -77,6 +76,7 @@ class BrainStateClassifier3d(TemplateModel):
     def _use_default_config(self) -> dict:
         return {
             'channels': [1, 8, 16, 32, 64],
+            'lin_neurons': [128, 64],
             'kernel_size': 5,
             'pooling_kernel': 2,
             'dropout': .5,
@@ -95,9 +95,10 @@ class BrainStateClassifier3d(TemplateModel):
         super(BrainStateClassifier3d, self).__init__()
         print('Loading from config file %s/config.yaml' % path_to_config_file)
         self.config = read_config(os.path.join(path_to_config_file, "config.yaml"))
-        self.train_fn = self.config['train_fn']     # override the default
+        self.train_fn = self.config['train_fn']  # override the default
         self._setup_layers()
-        self.load_state_dict(torch.load(os.path.join(path_to_config_file, "state_dict.pth"), map_location=torch.device("cpu")))
+        self.load_state_dict(
+            torch.load(os.path.join(path_to_config_file, "state_dict.pth"), map_location=torch.device("cpu")))
 
     def __init__(
             self,
@@ -142,7 +143,8 @@ class BrainStateClassifier3d(TemplateModel):
         self._check_params_in_config()
 
         if isinstance(self.config["kernel_size"], int):
-            self.config["kernel_size"] = [self.config["kernel_size"] for i in range(0, len(self.config["channels"]) - 1)]
+            self.config["kernel_size"] = [self.config["kernel_size"] for i in
+                                          range(0, len(self.config["channels"]) - 1)]
 
         self.config['input_dims'] = input_dims
         self.config['n_classes'] = n_classes
@@ -166,7 +168,7 @@ class BrainStateClassifier3d(TemplateModel):
         x = self.dropout(x)
         # pass the flattened input through n-1 linlayers followed by a dropout
         for i, linlayer in enumerate(self.lin):
-            if i < len(self.lin)-1:
+            if i < len(self.lin) - 1:
                 x = linlayer(x)
                 x = self.dropout(x)
 
@@ -249,7 +251,7 @@ class Simple2dCnnClassifier(TemplateModel):
         super(Simple2dCnnClassifier, self).__init__()
         print('Loading from config file %s/config.yaml' % path_to_config_file)
         self.config = read_config(os.path.join(path_to_config_file, "config.yaml"))
-        self.train_fn = self.config['train_fn']     # override the default
+        self.train_fn = self.config['train_fn']  # override the default
         self._setup_layers()
         self.load_state_dict(torch.load(os.path.join(path_to_config_file, "state_dict.pth")))
 
@@ -296,7 +298,8 @@ class Simple2dCnnClassifier(TemplateModel):
         self._check_params_in_config()
 
         if isinstance(self.config["kernel_size"], int):
-            self.config["kernel_size"] = [self.config["kernel_size"] for i in range(0, len(self.config["channels"]) - 1)]
+            self.config["kernel_size"] = [self.config["kernel_size"] for i in
+                                          range(0, len(self.config["channels"]) - 1)]
 
         self.config['input_dims'] = input_dims
         self.config['n_classes'] = n_classes

@@ -1,0 +1,6 @@
+channels: [1, 8, 8, 64]
+kernel_size1: 7
+kernel_size2: 5 
+kernel_size3: 3
+lin_neurons1: 128
+lin_neurons2: 128

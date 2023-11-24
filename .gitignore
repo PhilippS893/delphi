@@ -1,5 +1,5 @@
 /tests/wandb/
 /tests/generated_test_files/
-/examples/.ipynb_checkpoints/
+/tutorials/.ipynb_checkpoints/
 /delphi.egg-info/
-/examples/motor-mapper/.ipynb_checkpoints/
+/tutorials/motor-mapper/.ipynb_checkpoints/
